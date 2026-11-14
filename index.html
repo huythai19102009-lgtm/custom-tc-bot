@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSTOM 185 - FF Esports</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#071c20;color:white;font-family:Arial,sans-serif}
+header{background:#101318;border-bottom:4px solid #ffc400;padding:22px 14px;text-align:center}
+header h1{color:#ffc400;font-size:30px;margin:0}
+header p{color:#bbb;margin:8px 0 0}
+main{max-width:1000px;margin:auto;padding:14px}
+.panel{background:#15191f;border:1px solid #555;border-radius:12px;padding:15px;margin:14px 0}
+h2{font-size:19px;color:#ffc400;margin-top:0}
+button,select,input{font-size:15px;border-radius:7px;padding:11px;border:1px solid #555}
+input,select{background:#252a32;color:white;max-width:100%}
+button{background:#ffc400;color:#111;font-weight:bold;border:0;cursor:pointer}
+button.secondary{background:#303640;color:white}
+button.danger{background:#a83232;color:white}
+.tabs{display:flex;gap:8px}
+.tabs button{flex:1}
+.tabs button.active{background:#ffc400}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.field{flex:1;min-width:125px}
+.field label{display:block;color:#ccc;font-size:13px;margin-bottom:6px}
+.field input,.field select{width:100%}
+table{width:100%;border-collapse:collapse;min-width:550px}
+th,td{padding:11px 8px;border-bottom:1px solid #444;text-align:center;font-size:14px}
+th{background:#292e35;color:#ffc400}
+.tablewrap{overflow-x:auto}
+.big{font-size:26px;color:#ffc400;font-weight:bold}
+.small{font-size:12px;color:#aaa}
+#message{color:#ffc400;margin-top:10px}
+.hidden{display:none}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions button{flex:1}
+.team{display:flex;gap:8px;align-items:center}
+footer{text-align:center;color:#888;padding:25px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>⚡ CUSTOM 185 ⚡</h1>
+<p>FREE FIRE ESPORTS • SCORE SYSTEM</p>
+</header>
+<main>
+<div class="panel">
+<h2>CHỌN CHẾ ĐỘ TÍNH ĐIỂM</h2>
+<div class="tabs">
+<button id="normalTab" class="active" onclick="setMode('normal')">TÍNH ĐIỂM THƯỜNG</button>
+<button id="rushTab" onclick="setMode('rush')">CHAMPION RUSH</button>
+</div>
+<p class="small">Chế độ tính điểm có thể thay đổi bất cứ lúc nào.</p>
+</div>
+
+<div class="panel">
+<h2>⚙️ CÀI ĐẶT LUẬT GIẢI</h2>
+<div class="row">
+<div class="field">
+<label>Điểm mỗi Kill</label>
+<input id="killPoint" type="number" value="1" min="0">
+</div>
+<div class="field">
+<label>Mốc Champion Rush</label>
+<input id="threshold" type="number" value="80" min="1">
+</div>
+</div>
+<p class="small">Điểm Top mặc định (có thể sửa):</p>
+<div class="row" id="topSettings"></div>
+<button onclick="saveSettings()">LƯU LUẬT TÍNH ĐIỂM</button>
+</div>
+
+<div class="panel">
+<h2>➕ NHẬP KẾT QUẢ TRẬN</h2>
+<div class="row">
+<div class="field">
+<label>Tên đội</label>
+<input id="team" placeholder="Ví dụ: CUSTOM 185">
+</div>
+<div class="field">
+<label>Thứ hạng</label>
+<select id="rank">
+<option value="1">Top 1</option>
+<option value="2">Top 2</option>
+<option value="3">Top 3</option>
+<option value="4">Top 4</option>
+<option value="5">Top 5</option>
+<option value="6">Top 6</option>
+<option value="7">Top 7</option>
+<option value="8">Top 8</option>
+<option value="9">Top 9</option>
+<option value="10">Top 10</option>
+<option value="11">Top 11</option>
+<option value="12">Top 12</option>
+</select>
+</div>
+<div class="field">
+<label>Số Kill</label>
+<input id="kills" type="number" min="0" value="0">
+</div>
+<div class="field">
+<label>Booyah</label>
+<select id="booyah">
+<option value="no">Không</option>
+<option value="yes">Có - Booyah</option>
+</select>
+</div>
+</div>
+<button style="width:100%" onclick="addResult()">+ THÊM KẾT QUẢ TRẬN</button>
+<div id="message"></div>
+</div>
+
+<div class="panel">
+<h2>🏆 BẢNG XẾP HẠNG CUSTOM 185</h2>
+<div class="row">
+<div class="field">
+<label>Tổng số đội</label>
+<div class="big" id="teamCount">0</div>
+</div>
+<div class="field">
+<label>Tổng số trận đã nhập</label>
+<div class="big" id="matchCount">0</div>
+</div>
+</div>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>TOP</th>
+<th>TÊN ĐỘI</th>
+<th>BOOYAH</th>
+<th>KILL</th>
+<th>ĐIỂM</th>
+<th>TRẠNG THÁI</th>
+</tr>
+</thead>
+<tbody id="leaderboard"></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel">
+<h2>📋 LỊCH SỬ TRẬN ĐẤU</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>TRẬN</th><th>ĐỘI</th><th>TOP</th><th>KILL</th><th>ĐIỂM</th><th>BOOYAH</th></tr></thead>
+<tbody id="history"></tbody>
+</table>
+</div>
+<div class="actions">
+<button class="secondary" onclick="exportCSV()">XUẤT EXCEL (CSV)</button>
+<button class="danger" onclick="resetData()">XÓA DỮ LIỆU</button>
+</div>
+</div>
+<footer>CUSTOM 185 • FREE FIRE ESPORTS<br>Dữ liệu được lưu trên thiết bị này</footer>
+</main>
+
+<script>
+let mode='normal';
+let results=JSON.parse(localStorage.getItem('custom185_results')||'[]');
+let topPoints=[12,9,8,7,6,5,4,3,2,1,0,0];
+
+function drawSettings(){
+document.getElementById('topSettings').innerHTML=topPoints.map((p,i)=>`
+<div class="field">
+<label>Top ${i+1}</label>
+<input type="number" min="0" value="${p}" id="p${i+1}">
+</div>`).join('');
+}
+function saveSettings(){
+topPoints=topPoints.map((p,i)=>Math.max(0,Number(document.getElementById('p'+(i+1)).value)||0));
+localStorage.setItem('custom185_top',JSON.stringify(topPoints));
+render();
+alert('Đã lưu luật tính điểm!');
+}
+function setMode(m){
+mode=m;
+document.getElementById('normalTab').classList.toggle('active',m==='normal');
+document.getElementById('rushTab').classList.toggle('active',m==='rush');
+render();
+}
+function addResult(){
+let name=document.getElementById('team').value.trim();
+let rank=Number(document.getElementById('rank').value);
+let kills=Number(document.getElementById('kills').value);
+let booyah=document.getElementById('booyah').value==='yes';
+if(!name){alert('Bạn hãy nhập tên đội!');return}
+if(!Number.isInteger(kills)||kills<0){alert('Số Kill không hợp lệ!');return}
+let place=topPoints[rank-1]||0;
+let kp=Math.max(0,Number(document.getElementById('killPoint').value)||0);
+let score=place+kills*kp;
+results.push({name,rank,kills,booyah,score,mode});
+save();
+document.getElementById('message').textContent='Đã thêm kết quả thành công!';
+document.getElementById('kills').value=0;
+document.getElementById('booyah').value='no';
+}
+function save(){
+localStorage.setItem('custom185_results',JSON.stringify(results));
+render();
+}
+function getTeams(){
+let teams={};
+results.forEach(r=>{
+if(!teams[r.name])teams[r.name]={name:r.name,points:0,kills:0,booyah:0,matches:0,qualified:false,champion:false};
+let t=teams[r.name];
+t.points+=r.score;
+t.kills+=r.kills;
+t.booyah+=r.booyah?1:0;
+t.matches++;
+});
+let threshold=Math.max(1,Number(document.getElementById('threshold').value)||80);
+Object.values(teams).forEach(t=>{
+t.qualified=t.points>=threshold;
+let rushWins=results.filter(r=>r.name===t.name&&r.booyah&&
+results.filter(x=>x.name===t.name&&x!==r).length>=0);
+t.champion=t.qualified&&rushWins.length>0;
+});
+return Object.values(teams).sort((a,b)=>b.points-a.points||b.kills-a.kills||b.booyah-a.booyah);
+}
+function render(){
+let teams=getTeams();
+document.getElementById('teamCount').textContent=teams.length;
+document.getElementById('matchCount').textContent=results.length;
+document.getElementById('leaderboard').innerHTML=teams.map((t,i)=>{
+let status=mode==='normal'?'Đang thi đấu':t.champion?'🏆 VÔ ĐỊCH':t.qualified?'ĐÃ ĐẠT MỐC':'Chưa đạt mốc';
+return `<tr><td>${i+1}</td><td>${escapeHTML(t.name)}</td><td>${t.booyah}</td><td>${t.kills}</td><td><b>${t.points}</b></td><td>${status}</td></tr>`;
+}).join('')||'<tr><td colspan="6">Chưa có dữ liệu</td></tr>';
+document.getElementById('history').innerHTML=results.map((r,i)=>`
+<tr><td>${i+1}</td><td>${escapeHTML(r.name)}</td><td>Top ${r.rank}</td><td>${r.kills}</td><td>${r.score}</td><td>${r.booyah?'Có':'Không'}</td></tr>
+`).join('')||'<tr><td colspan="6">Chưa có trận đấu</td></tr>';
+}
+function escapeHTML(s){
+return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function resetData(){
+if(confirm('Bạn có chắc muốn xóa toàn bộ kết quả?')){
+results=[];save();
+}
+}
+function exportCSV(){
+let teams=getTeams();
+let rows=[['Xếp hạng','Tên đội','Booyah','Kill','Tổng điểm','Trạng thái']];
+teams.forEach((t,i)=>rows.push([i+1,t.name,t.booyah,t.kills,t.points,t.champion?'Vô địch':t.qualified?'Đạt mốc':'Chưa đạt']));
+let csv='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+let a=document.createElement('a');
+a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+a.download='CUSTOM-185-BANG-DIEM.csv';a.click();
+URL.revokeObjectURL(a.href);
+}
+let savedTop=JSON.parse(localStorage.getItem('custom185_top')||'null');
+if(savedTop&&savedTop.length===12)topPoints=savedTop;
+drawSettings();
+render();
+</script>
+</body>
+</html>
